@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Apex Racing">
+  <circle cx="24" cy="24" r="22" fill="#0b1a1e" stroke="#00d2be" stroke-width="2"/>
+  <path d="M24 8 L36 34 H30 L27 26 H21 L18 34 H12 Z M22.5 22 H25.5 L24 18 Z" fill="#00d2be"/>
+  <path d="M14 38 H34" stroke="#00d2be" stroke-width="2" stroke-linecap="round"/>
+</svg>
