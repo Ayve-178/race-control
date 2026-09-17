@@ -1,0 +1,182 @@
+{
+  "circuit": {
+    "name": "Hockenheim",
+    "country": "Germany",
+    "totalLaps": 67
+  },
+  "drivers": [
+    {
+      "id": "nova-07",
+      "name": "Aria Nova",
+      "shortName": "A. NOVA",
+      "code": "NOV",
+      "number": 7,
+      "team": "Apex Racing",
+      "baseline": {
+        "position": 1,
+        "lap": 16,
+        "topSpeedKmh": 287,
+        "bestLap": "1:23.05",
+        "heartRateBpm": 65,
+        "breathsPerMin": 12,
+        "stress": 51,
+        "rpm": 9800,
+        "engineTempC": 112,
+        "fuelPercent": 78,
+        "tyres": {
+          "fl": {
+            "tempC": 104,
+            "pressureBar": 1.2
+          },
+          "fr": {
+            "tempC": 101,
+            "pressureBar": 1.21
+          },
+          "rl": {
+            "tempC": 98,
+            "pressureBar": 1.18
+          },
+          "rr": {
+            "tempC": 99,
+            "pressureBar": 1.19
+          }
+        },
+        "brakes": {
+          "fl": {
+            "tempC": 650
+          },
+          "fr": {
+            "tempC": 640
+          },
+          "rl": {
+            "tempC": 520
+          },
+          "rr": {
+            "tempC": 515
+          }
+        }
+      }
+    },
+    {
+      "id": "vek-22",
+      "name": "Kai Veldor",
+      "shortName": "K. VELDOR",
+      "code": "VEL",
+      "number": 22,
+      "team": "Apex Racing",
+      "baseline": {
+        "position": 3,
+        "lap": 16,
+        "topSpeedKmh": 279,
+        "bestLap": "1:23.41",
+        "heartRateBpm": 72,
+        "breathsPerMin": 14,
+        "stress": 58,
+        "rpm": 10200,
+        "engineTempC": 118,
+        "fuelPercent": 74,
+        "tyres": {
+          "fl": {
+            "tempC": 110,
+            "pressureBar": 1.24
+          },
+          "fr": {
+            "tempC": 108,
+            "pressureBar": 1.23
+          },
+          "rl": {
+            "tempC": 105,
+            "pressureBar": 1.2
+          },
+          "rr": {
+            "tempC": 106,
+            "pressureBar": 1.21
+          }
+        },
+        "brakes": {
+          "fl": {
+            "tempC": 680
+          },
+          "fr": {
+            "tempC": 670
+          },
+          "rl": {
+            "tempC": 540
+          },
+          "rr": {
+            "tempC": 535
+          }
+        }
+      }
+    },
+    {
+      "id": "rine-44",
+      "name": "Soren Hale",
+      "shortName": "S. HALE",
+      "code": "HAL",
+      "number": 44,
+      "team": "Apex Racing",
+      "baseline": {
+        "position": 5,
+        "lap": 15,
+        "topSpeedKmh": 274,
+        "bestLap": "1:24.02",
+        "heartRateBpm": 68,
+        "breathsPerMin": 13,
+        "stress": 47,
+        "rpm": 9400,
+        "engineTempC": 108,
+        "fuelPercent": 81,
+        "tyres": {
+          "fl": {
+            "tempC": 96,
+            "pressureBar": 1.17
+          },
+          "fr": {
+            "tempC": 95,
+            "pressureBar": 1.16
+          },
+          "rl": {
+            "tempC": 93,
+            "pressureBar": 1.15
+          },
+          "rr": {
+            "tempC": 94,
+            "pressureBar": 1.15
+          }
+        },
+        "brakes": {
+          "fl": {
+            "tempC": 610
+          },
+          "fr": {
+            "tempC": 605
+          },
+          "rl": {
+            "tempC": 490
+          },
+          "rr": {
+            "tempC": 485
+          }
+        }
+      }
+    }
+  ],
+  "weatherBaseline": {
+    "airTempC": 23.4,
+    "cloudCoverPercent": 13,
+    "humidityPercent": 75,
+    "pressureMb": 1012,
+    "windSpeedKmh": 7
+  },
+  "sampleEvents": [
+    "LAP COMPLETED",
+    "SECTOR 2 PERSONAL BEST",
+    "TYRE TEMPERATURE HIGH",
+    "DRS AVAILABLE",
+    "PIT WINDOW OPEN",
+    "ERS DEPLOY MODE",
+    "YELLOW FLAG — TURN 6",
+    "RADIO CHECK OK"
+  ]
+}
