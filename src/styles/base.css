@@ -1,0 +1,39 @@
+@layer base {
+  html {
+    background: var(--surface);
+    color: var(--text-primary);
+    font: var(--t-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-synthesis: none;
+  }
+
+  /* the board is a fixed frame that does not scroll. below 1024 it stops being one and the
+     page takes over, which is the only place on this design where scrolling is allowed. */
+  body {
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
+  @media (max-width: 1023px) {
+    body {
+      overflow: auto;
+    }
+  }
+
+  #root {
+    min-height: 100dvh;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font: inherit;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--surface);
+  }
+}

@@ -1,0 +1,93 @@
+/* the bridge between tokens.css and tailwind. tokens.css is the palette of record and does not
+   change; this only gives every value a utility name.
+
+   `inline` is load bearing. without it the indirection resolves once on :root and inherits down
+   already resolved, so the rule that quiets every live indicator on a held board would stop
+   reaching them. it also defuses the name collisions: --font-* and --ease would otherwise become
+   cyclic self references. */
+@theme inline {
+  /* every default namespace is cleared first. after this bg-red-500 and text-xs do not exist,
+     so a typo emits no css at all rather than a quiet, plausible, off palette colour. */
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --tracking-*: initial;
+  --leading-*: initial;
+  --breakpoint-*: initial;
+  --container-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --ease-*: initial;
+  --animate-*: initial;
+  --blur-*: initial;
+  --aspect-*: initial;
+  --perspective-*: initial;
+
+  /* the design's scale is 2/4/6/8/12/16/24, which is linear for four steps and then is not. the
+     base gives the first four for free and the last three are stated, so p-4 is 8px and gap-7
+     is 24px all the way up the scale.
+
+     THE COROLLARY, AND IT HAS BITTEN ONCE. the base being 2px means a numeric utility is half
+     the number a 4px project would give: w-3 is 6 pixels, not 12. so numbers are for spacing —
+     gap, padding, margin — and every literal dimension the design states in pixels is written
+     as an arbitrary value: w-[32px], h-[2px], min-h-[44px]. a 32px icon button written w-8
+     comes out 16 and nothing anywhere reports it. */
+  --spacing: 2px;
+  --spacing-5: 12px;
+  --spacing-6: 16px;
+  --spacing-7: 24px;
+
+  --color-surface: var(--surface);
+  --color-sunken: var(--surface-sunken);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+
+  --color-brand: var(--brand);
+  --color-live: var(--live);
+
+  --color-accent: var(--accent);
+  --color-accent-dim: var(--accent-dim);
+  --color-accent-wash: var(--accent-wash);
+
+  --color-selected: var(--selected);
+
+  --color-caution: var(--caution);
+  --color-caution-wash: var(--caution-wash);
+  --color-critical: var(--critical);
+  --color-critical-wash: var(--critical-wash);
+
+  --color-zone-1: var(--zone-1);
+  --color-zone-2: var(--zone-2);
+  --color-zone-3: var(--zone-3);
+
+  --font-ui: var(--font-ui);
+  --font-mono: var(--font-mono);
+
+  --radius-1: var(--r-1);
+
+  /* the keyframes are in app.css. these are the two things on the board allowed to move on
+     their own, and both of them mean "this is happening now". */
+  --animate-pulse-live: pulse-live 2s var(--ease) infinite;
+  --animate-tyre-alarm: tyre-alarm 1.8s var(--ease) infinite;
+
+  /* so a bare transition-* already carries the design's motion rather than tailwind's default */
+  --default-transition-duration: var(--dur-1);
+  --default-transition-timing-function: var(--ease);
+
+  /* the three steps a class list needs a name for. the fourth, where the fixed frame goes
+     elastic at 1440, only ever appears in app.css.
+
+     READ THIS BEFORE CHANGING A NUMBER. tailwind's max-* variant generates `width < X`, which
+     excludes X, while the design's media queries use `max-width: X`, which includes it. so each
+     breakpoint below is registered one pixel above the width it actually means, and max-laptop:
+     covers 1279 and under exactly as `@media (max-width: 1279px)` does. */
+  --breakpoint-phone: 768px; /* max-width: 767px */
+  --breakpoint-tablet: 1024px; /* max-width: 1023px */
+  --breakpoint-laptop: 1280px; /* max-width: 1279px */
+}

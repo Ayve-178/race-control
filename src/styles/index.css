@@ -1,0 +1,37 @@
+/* the one place the cascade order is decided.
+ *
+ * the rule used to be that css modules are unlayered and therefore always win, and eighteen
+ * `composes: label from global` sites relied on it: each overrode part of .label at equal
+ * specificity and won only by sitting outside a layer. the named layers below keep that shape.
+ * our own primitives sit under tailwind's utilities so a utility can override them, and app.css
+ * sits above everything, in the slot the modules used to hold.
+ *
+ * tailwind is imported as separate files rather than as `tailwindcss`, so it emits no @layer
+ * statement of its own and the line below is the only ordering in the bundle. imported whole,
+ * its statement can land first and push reset to the end of the order, where it would start
+ * beating every utility.
+ *
+ * preflight is deliberately absent. reset.css is the reset: it sets cursor:pointer on buttons
+ * where preflight sets default, it inherits link colour, and it carries the global
+ * :focus-visible ring that gives every control on the board a visible one in four lines.
+ * preflight could only ever be added to that, never swapped for it.
+ */
+@layer theme, reset, tokens, base, components, utilities, app;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import './theme.css';
+
+@import './reset.css';
+@import './tokens.css';
+@import './base.css';
+@import './components.css';
+
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/* the scanner reads candidate class names out of any text it is given, so `const { container } =
+   render(...)` in a test file was enough to emit tailwind's whole .container utility and a media
+   query per breakpoint for it. tests do not ship, so nothing in one should reach the bundle. */
+@source not '../../tests/**';
+@source not '../../README.md';
+
+@import './app.css';

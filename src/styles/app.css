@@ -1,0 +1,676 @@
+/* the rules that have no honest utility form, and nothing else.
+ *
+ * this file sits after tailwind's utilities in the layer order, so anything in it wins. that is
+ * a sharp edge: a p-4 added later to an element whose padding is set here would be quietly
+ * ignored. so it stays small, and only five kinds of rule are allowed in it:
+ *
+ *   1. grid-template-areas, which is a quoted multi-line value
+ *   2. layered gradients and masks, which is how every scale on this board is drawn
+ *   3. svg paint, which has no utilities worth the name
+ *   4. custom property overrides, which are inherited rather than applied
+ *   5. the keyframes, which live outside the layers because that is where keyframes live
+ *
+ * anything else belongs in a class list.
+ */
+
+@keyframes pulse-live {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes tyre-alarm {
+  0%,
+  100% {
+    box-shadow: var(--glow-critical);
+  }
+  50% {
+    box-shadow: 0 0 20px rgb(255 77 109 / 0.85);
+  }
+}
+
+@layer app {
+  /* ---- the board ------------------------------------------------------------------------
+   * 1440 x 900, no scroll. rows are masthead / urgency band / the grid.
+   * not flat black: two very low amplitude washes give the ground depth and a direction, so
+   * the panels sit on something instead of floating in a void.
+   */
+  .board {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-rows: 44px 96px 1fr;
+    width: 1440px;
+    /* the design states 900. a laptop 768 tall would then lose the bottom of the board to
+       body{overflow:hidden}, so the frame takes the smaller of the two and the 1fr row gives
+       up the difference. at the design's own size this is exactly 900. */
+    height: min(900px, 100dvh);
+    margin: 0 auto;
+    overflow: hidden;
+    /* the roundel, drawn enormous and almost invisible, centred on the board and painted into the
+       ground rather than stacked on it as an element. it used to sit at 118% 128%, bled off the
+       bottom right corner, which reads as a mark that missed rather than as a watermark.
+       that is a measured decision, not a preference: as a 720px element under the grain layer's
+       mix-blend-mode it was re-composited on every frame the track markers moved, and the board
+       ran at 50fps with 73 frames over 20ms. as a background layer it is painted into the board's
+       own layer once, 60fps, p95 16.7ms, nothing over 20ms. a background layer has no opacity of
+       its own, so the 3.5% is baked into the paint inside the data uri. */
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='rgba(200,121,74,0.035)' stroke-width='1.2'%3E%3Ccircle cx='24' cy='24' r='22'/%3E%3Cpath d='M14 38H34' stroke-linecap='round'/%3E%3C/g%3E%3Cpath d='M24 8 L36 34 H30 L27 26 H21 L18 34 H12 Z M22.5 22 H25.5 L24 18 Z' fill='rgba(200,121,74,0.035)'/%3E%3C/svg%3E")
+        no-repeat 50% 50% / 720px 720px,
+      radial-gradient(130% 80% at 50% -25%, rgb(200 121 74 / 0.065), transparent 58%),
+      radial-gradient(90% 70% at 102% 104%, rgb(53 179 126 / 0.045), transparent 62%),
+      var(--surface);
+  }
+
+  /* grain. keeps the large dark fields from banding and reads as a screen rather than a
+     canvas. inline, because a request for a 300 byte texture is a request too many. */
+  .board::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.2;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* held or finished, nothing on the board is arriving any more, so nothing on it should still
+     be claiming to be live. one override at the top rather than a prop threaded through every
+     panel, and it works by inheritance, reaching consumers four files away. */
+  .board[data-held='true'] {
+    --live: var(--text-muted);
+    --live-glow: none;
+  }
+
+  .board[data-held='true'] .motion-safe\:animate-pulse-live {
+    animation: none;
+  }
+
+  /* ---- the three columns ------------------------------------------------------------------
+   * the circuit leads the left column. it is the thing an engineer glances at most and the
+   * board's strongest single image, so it sits at the top rather than buried under a list.
+   * placed by area rather than by `order`, so each width can rearrange the same three panels
+   * without the dom moving.
+   */
+  .board-grid {
+    display: grid;
+    grid-template-columns: 420px 460px 1fr;
+    min-height: 0;
+  }
+
+  .col {
+    display: grid;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* the circuit takes everything the other two do not need: it is the board's strongest single
+     image and the thing an engineer glances at most. */
+  .col--left {
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'circuit'
+      'stint'
+      'weather';
+  }
+
+  .col--left > * {
+    border-top: 1px solid var(--border);
+  }
+
+  /* every panel names the cell it belongs in, and the column decides where that cell is. it is
+     the same eight names at all four widths, which is what lets the compositions below be a
+     change of arrangement rather than a change of markup. */
+  .panel-circuit {
+    grid-area: circuit;
+    border-top: 0;
+  }
+  .panel-stint {
+    grid-area: stint;
+  }
+  .panel-weather {
+    grid-area: weather;
+  }
+  .panel-tyres {
+    grid-area: tyres;
+  }
+  .panel-power {
+    grid-area: power;
+  }
+  .panel-physio {
+    grid-area: physio;
+  }
+  .panel-log {
+    grid-area: log;
+  }
+
+  .col--center {
+    grid-template-rows: minmax(0, 1fr) 200px;
+    grid-template-areas:
+      'tyres'
+      'power';
+    border-left: 1px solid var(--border-strong);
+    border-right: 1px solid var(--border-strong);
+  }
+
+  .col--center > * + * {
+    border-top: 1px solid var(--border);
+  }
+
+  /* 380 rather than 436: the three traces need 108 each and had 130, and the event log is the
+     one panel on this board that can actually use the difference: it is a list that runs out of
+     room rather than a fixed set of readings. */
+  .col--right {
+    grid-template-rows: 380px minmax(0, 1fr);
+    grid-template-areas:
+      'physio'
+      'log';
+  }
+
+  .col--right > * + * {
+    border-top: 1px solid var(--border);
+  }
+
+  /* ---- a scrollbar you can see but would not notice -----------------------------------------
+   * the event log is the one panel that genuinely runs out of room, so it has to say that it
+   * scrolls. the platform default is a light chrome-coloured bar that reads as a piece of the
+   * browser sitting on top of the board; this is the board's own hairline language instead.
+   * `scrollbar-width`/`scrollbar-color` is the standard property and covers firefox; the webkit
+   * pseudo-elements are what chrome and safari actually use, and neither has a utility form.
+   */
+  .scroll-subtle {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+
+  .scroll-subtle::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scroll-subtle::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scroll-subtle::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 3px;
+  }
+
+  .scroll-subtle::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
+
+  /* ---- the car ----------------------------------------------------------------------------
+   * the stage is the room the panel has left under its heading. the car is drawn at --art of it
+   * and centred, and the two readout rows are sized so their centres land on the axles.
+   *
+   * the arithmetic, because the three numbers are not independent and must be rederived together
+   * if any one of them moves. with the art at fraction A of the stage, centred, its top edge is
+   * at (1-A)/2, the front axle is 20.5% down the art and the rear axle 85%:
+   *
+   *   front row = 2 * ((1-A)/2 + 0.205A) = 1 - 0.59A     A=0.86 -> 0.493
+   *   rear row  = 2 * (1 - ((1-A)/2 + 0.85A)) = 1 - 0.7A A=0.86 -> 0.398
+   *
+   * the middle row is whatever is left, and exists only to hold the two apart.
+   *
+   * the car used to be the stage, A was 1, and `height: min(100%, 431px)` was the car's own
+   * height. that read well and was wrong twice over. the percentage resolved against the whole
+   * panel rather than against the room under the heading, so on a 720 tall screen the stage ran
+   * 26px past the bottom of the panel and overflow:hidden took the rear readouts' last line with
+   * it; and there was no way to give the readouts more room without making the car bigger, since
+   * they were the same measurement. flex-basis measures the real gap, and A decouples the two.
+   */
+  .car-stage {
+    --art: 86%;
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-rows: 49% 1fr 40%;
+    grid-template-areas:
+      'fl car fr'
+      '.  car .'
+      'rl car rr';
+    /* 480 is what a 900 tall board has to spare here, which puts the car at 180 wide against the
+       188 the design drew. anything shorter and the whole stage shrinks together, A is the
+       largest value at which the rear row still holds its 124px of readout on a 720 tall screen,
+       which is the shortest desktop this board is meant for. */
+    flex: 0 1 480px;
+    min-height: 0;
+  }
+
+  /* the lead line from a readout to the wheel it describes. it lives in the 16px column gap,
+     which is the only thing between the two, so it cannot point at empty space. it takes the
+     tyre's own colour, which is what makes it read as a label line rather than as decoration.
+     it used to start flush against the text and the dot sat on the last character.
+     the clear space comes off the line rather than out of the column, because there is nothing
+     to take: at 1279 the readout column is 92px wide and a four figure brake reading needs 92. */
+  .car-lead {
+    --lead-gap: 6px;
+    position: absolute;
+    top: 50%;
+    width: calc(16px - var(--lead-gap));
+    height: 1px;
+    background: currentColor;
+    color: var(--zone-1);
+    opacity: 0.75;
+    pointer-events: none;
+  }
+
+  /* a dot at the readout end and a plain line to the wheel. the dot is what makes it read as a
+     leader line pointing somewhere rather than as a stray rule in the gap. */
+  .car-lead::before {
+    content: '';
+    position: absolute;
+    top: -1.5px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .car-lead--right {
+    left: calc(100% + var(--lead-gap));
+  }
+
+  .car-lead--right::before {
+    left: 0;
+  }
+
+  .car-lead--left {
+    right: calc(100% + var(--lead-gap));
+  }
+
+  .car-lead--left::before {
+    right: 0;
+  }
+
+  .car-lead[data-band='warm'] {
+    color: var(--zone-2);
+    opacity: 1;
+  }
+
+  .car-lead[data-band='hot'] {
+    color: var(--zone-3);
+    opacity: 1;
+  }
+
+  /* the corner being looked at, in the one hue that means "this one" everywhere on the board */
+  .car-lead[data-shown='true'] {
+    color: var(--selected);
+    opacity: 1;
+  }
+
+  /* the brake is the one reading in a corner that is not about the tyre, and as a sixth plain
+     line under five tyre lines it read as a sixth tyre line. so it gets a ground of its own and
+     a rail in its own band, the same two-part severity rail the event log uses, which is the
+     board's existing way of saying "this row has a state". the rail is on the inline start edge
+     at all four corners, including the two that are right aligned, because a rail that swaps
+     sides stops being a rail and becomes decoration. */
+  .brake-chip {
+    --rail: var(--border-strong);
+    background: var(--surface-sunken);
+    border-inline-start: 2px solid var(--rail);
+  }
+
+  .brake-chip[data-band='warm'] {
+    --rail: var(--caution);
+    background: var(--caution-wash);
+  }
+
+  .brake-chip[data-band='hot'] {
+    --rail: var(--critical);
+    background: var(--critical-wash);
+  }
+
+  /* ---- the weather --------------------------------------------------------------------------
+   * one tint per reading, looked up from the kind. it has to be a custom property rather than a
+   * class per colour, because the box uses it three times over at three different strengths —
+   * the border, the wash and the icon, and color-mix has nothing to mix without a name.
+   */
+  .weather-box {
+    --tint: var(--text-muted);
+  }
+  .weather-box[data-kind='air'] {
+    --tint: var(--weather-air);
+  }
+  .weather-box[data-kind='cloud'] {
+    --tint: var(--weather-cloud);
+  }
+  .weather-box[data-kind='humidity'] {
+    --tint: var(--weather-humidity);
+  }
+  .weather-box[data-kind='pressure'] {
+    --tint: var(--weather-pressure);
+  }
+  .weather-box[data-kind='wind'] {
+    --tint: var(--weather-wind);
+  }
+
+  /* ---- the meters -------------------------------------------------------------------------
+   * the track is the whole operating range, drawn green to amber to red and segmented like a
+   * physical bargraph. everything past the current value is dimmed back toward the ground, so
+   * the lit length is the reading and its colour falls out of where it lands.
+   */
+  .meter {
+    position: relative;
+    height: 10px;
+    background: linear-gradient(
+      90deg,
+      var(--zone-1) 0 46%,
+      var(--zone-2) 46% 74%,
+      var(--zone-3) 74% 100%
+    );
+    -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 6px, transparent 6px 8px);
+    mask-image: repeating-linear-gradient(90deg, #000 0 6px, transparent 6px 8px);
+  }
+
+  /* channels where low is the dangerous end: fuel and the battery */
+  .meter--reverse {
+    background: linear-gradient(
+      90deg,
+      var(--zone-3) 0 24%,
+      var(--zone-2) 24% 52%,
+      var(--zone-1) 52% 100%
+    );
+  }
+
+  .meter i {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    background: var(--surface);
+    opacity: 0.82;
+  }
+
+  /* ---- the physio traces ------------------------------------------------------------------
+   * the plot bed carries the zone bands, so a peak that reaches the top band is visibly in the
+   * red without threshold logic or a second colour system. it is the meter scale, stood on end.
+   *
+   * one tint per channel, looked up from the row, exactly as the weather boxes do it, and for
+   * the same reason: three plots in one panel drawn in one colour are told apart only by reading
+   * their labels. the tint paints the line, the area under it and the icon, so the channel is
+   * identifiable from across the garage. the reading marker on the rail stays bone, because that
+   * one is a measurement rather than an identity.
+   */
+  .trace-row {
+    --tint: var(--accent);
+  }
+  .trace-row[data-trace='heart'] {
+    --tint: var(--trace-heart);
+  }
+  .trace-row[data-trace='breathing'] {
+    --tint: var(--trace-breathing);
+  }
+  .trace-row[data-trace='stress'] {
+    --tint: var(--trace-stress);
+  }
+
+  .trace-plot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        to top,
+        rgb(53 179 126 / 0.13) 0 46%,
+        rgb(226 179 60 / 0.15) 46% 74%,
+        rgb(226 88 110 / 0.18) 74% 100%
+      ),
+      repeating-linear-gradient(to bottom, var(--border) 0 1px, transparent 1px 21px);
+    pointer-events: none;
+  }
+
+  .trace-gauge::before {
+    content: '';
+    position: absolute;
+    inset: 0 3px;
+    background: linear-gradient(
+      to top,
+      var(--zone-1) 0 46%,
+      var(--zone-2) 46% 74%,
+      var(--zone-3) 74% 100%
+    );
+    -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 4px, transparent 4px 6px);
+    mask-image: repeating-linear-gradient(to bottom, #000 0 4px, transparent 4px 6px);
+    opacity: 0.6;
+  }
+
+  .trace-gauge b {
+    position: absolute;
+    left: -3px;
+    right: -3px;
+    height: 2px;
+    background: var(--text-primary);
+    transform: translateY(-50%);
+  }
+
+  /* ---- the circuit ------------------------------------------------------------------------
+   * svg presentation properties: stroke-width, paint-order, text-anchor. tailwind has utilities
+   * for almost none of them and arbitrary values for the rest would be strictly longer and
+   * strictly harder to read than the css.
+   */
+  .track-underlay {
+    fill: none;
+    stroke: var(--text-secondary);
+    stroke-width: 5.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.14;
+  }
+
+  .track-line {
+    fill: none;
+    stroke: var(--text-secondary);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* a yellow does not recolour the circuit, it lays a thicker band over the third of it that is
+     actually under the flag, so it reads as a condition on the track */
+  .track-yellow {
+    fill: none;
+    stroke: var(--caution);
+    stroke-width: 6;
+    stroke-linecap: butt;
+    opacity: 0.85;
+  }
+
+  .track-start {
+    fill: none;
+    stroke: var(--text-primary);
+    stroke-width: 7;
+    stroke-linecap: butt;
+  }
+
+  .track-halo {
+    fill: var(--text-muted);
+    opacity: 0.22;
+  }
+
+  .track-dot {
+    fill: var(--surface);
+    stroke: var(--text-muted);
+    stroke-width: 1.6;
+  }
+
+  .track-number {
+    font-family: var(--font-ui);
+    font-size: 9px;
+    font-weight: 700;
+    text-anchor: middle;
+    fill: var(--text-secondary);
+    /* the outline is painted behind the glyph so a number never disappears into the circuit
+       line it happens to be sitting on */
+    paint-order: stroke;
+    stroke: var(--surface);
+    stroke-width: 3;
+    stroke-linejoin: round;
+  }
+
+  /* our cars are filled rather than outlined, which is a difference you can still see with no
+     colour at all */
+  .track-marker[data-ours='true'] .track-dot {
+    fill: var(--brand);
+    stroke: var(--brand);
+  }
+
+  .track-marker[data-ours='true'] .track-halo {
+    fill: var(--brand);
+  }
+
+  .track-marker[data-ours='true'] .track-number {
+    fill: var(--text-primary);
+  }
+
+  /* the selected car, in the one hue on the board that means neither good nor bad. it was bone,
+     and bone on this drawing is already the start line: a white dot among grey ones read as a
+     marker on the circuit rather than as the car every other panel is describing. */
+  .track-marker[data-selected='true'] .track-dot {
+    fill: var(--selected);
+    stroke: var(--selected);
+    stroke-width: 1.8;
+  }
+
+  .track-marker[data-selected='true'] .track-halo {
+    fill: var(--selected);
+    opacity: 0.4;
+  }
+
+  .track-marker[data-selected='true'] .track-number {
+    fill: var(--selected);
+  }
+
+  /* ==========================================================================================
+     RESPONSIVE
+
+     the hierarchy changes at each step; nothing is merely scaled down. what survives longest,
+     in order: position and lap, the selected tyre, the event log. what goes first: the min and
+     max stats, the stint panel, the older axis ticks, context you can ask for rather than
+     monitor.
+     ========================================================================================== */
+
+  /* below 1440 the fixed frame becomes elastic */
+  @media (max-width: 1439px) {
+    .board {
+      width: 100%;
+    }
+  }
+
+  /* laptop: still no scroll, but the context column gives up width */
+  @media (max-width: 1279px) {
+    .board-grid {
+      grid-template-columns: 264px minmax(350px, 420px) 1fr;
+    }
+
+    /* the car gives up width so the four readouts stop wrapping "Front left" onto two lines.
+       410 of stage is 344 of car, which is the height at which it is 150 wide. */
+    .car-stage {
+      flex-basis: 410px;
+    }
+
+    .col--right {
+      grid-template-rows: 336px minmax(0, 1fr);
+    }
+  }
+
+  /* tablet: two columns and the page scrolls. the context column stops being a column and
+     becomes a strip, and the corner readouts stop flanking the car and become a 2x2 block
+     beneath it. */
+  @media (max-width: 1023px) {
+    .board {
+      height: auto;
+      min-height: 100dvh;
+      grid-template-rows: 44px auto auto;
+    }
+
+    .board-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* the circuit spans both rows of its column: the two short panels stack beside it instead
+       of stretching to its height and leaving a dead gap under them */
+    .col--left {
+      grid-column: 1 / -1;
+      grid-template-rows: none;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        'stint   circuit'
+        'weather circuit';
+      border-bottom: 1px solid var(--border-strong);
+    }
+
+    .panel-circuit {
+      border-left: 1px solid var(--border);
+    }
+
+    .panel-stint {
+      border-top: 0;
+    }
+
+    .col--center {
+      grid-column: 1;
+      grid-template-rows: auto auto;
+      border-left: 0;
+    }
+
+    .col--right {
+      grid-column: 2;
+      grid-template-rows: auto auto;
+      border-left: 1px solid var(--border-strong);
+    }
+
+    /* the car stops being flanked and sits above a 2x2 block of readouts. nothing has to line up
+       with an axle any more, so the stage goes back to being sized by its content and the art
+       takes the whole of the box the figure gives it. */
+    .car-stage {
+      --art: 100%;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+      grid-template-areas:
+        'car car'
+        'fl  fr'
+        'rl  rr';
+      flex: 0 0 auto;
+    }
+
+    .car-stage > figure {
+      height: 320px;
+      justify-content: center;
+    }
+  }
+
+  /* phone: one column. the band sticks, because on a phone you scroll away from everything
+     else. */
+  @media (max-width: 767px) {
+    .board-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .col--left,
+    .col--center,
+    .col--right {
+      grid-column: 1;
+      border-left: 0;
+      border-right: 0;
+    }
+
+    .col--left {
+      grid-template-columns: 1fr;
+      /* release the tablet arrangement so the panels fall back into reading order */
+      grid-template-areas: none;
+    }
+
+    .col--left > * {
+      grid-area: auto;
+      border-left: 0;
+      border-top: 1px solid var(--border);
+    }
+
+  }
+}

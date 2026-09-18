@@ -1,0 +1,117 @@
+/* every colour, size and timing the board uses. components only ever name these.
+ *
+ * the design was handed over as a stylesheet of var() references with the variable file
+ * missing, so the palette below is reconstructed from the literal rgba values written into
+ * the design itself: the two ground washes, the plot bands, the tyre alarm and the trace
+ * cursor. anything the design never wrote as a literal is stated here and nowhere else, so
+ * swapping in the designer's own file later is a one file change.
+ */
+@layer tokens {
+  :root {
+    color-scheme: dark;
+
+    /* one dark ground with hairline rules. no panel has a radius or a shadow. */
+    --surface: #0b0e10;
+    --surface-sunken: #07090a;
+    --border: rgb(255 255 255 / 0.07);
+    --border-strong: rgb(255 255 255 / 0.13);
+
+    --text-primary: #e9edef;
+    --text-secondary: #b3bcc0;
+    /* the smallest text on the board sits at 9px, so muted has to clear 4.5:1 on --surface */
+    --text-muted: #828e94;
+
+    /* copper. live, now, the mark, and the lit part of the lap. nothing else. */
+    --brand: #c8794a;
+    --glow-soft: 0 0 6px rgb(200 121 74 / 0.55);
+
+    /* bone. emphasis: the big readout, the pressed state, the reading marker on a rail. */
+    --accent: #ede7dc;
+    --accent-dim: rgb(237 231 220 / 0.32);
+    --accent-wash: rgb(237 231 220 / 0.07);
+
+    /* the car this whole board is pointed at. it was bone too, until the circuit made the problem
+       obvious: bone is also the start line and the gauge markers, so the selected car read as one
+       more reference mark rather than as a car. cyan is the only hue on this board that is neither
+       a status nor a brand, which is exactly what a selection colour has to be. */
+    --selected: #4cc9f0;
+
+    /* deviation, and only deviation. a nominal reading is never coloured. */
+    --caution: #e2b33c;
+    --caution-wash: rgb(226 179 60 / 0.1);
+    --glow-caution: 0 0 12px rgb(226 179 60 / 0.35);
+    --critical: #ff4d6d;
+    --critical-wash: rgb(255 77 109 / 0.12);
+    --glow-critical: 0 0 12px rgb(255 77 109 / 0.5);
+
+    /* the meter scale. these paint a track, never a state: where the reading lands on the
+       scale is what gives it its colour, so there is no separate threshold rule anywhere. */
+    --zone-1: #35b37e;
+    --zone-2: #e2b33c;
+    --zone-3: #e2586e;
+
+    /* the weather. this is the one group on the board where colour identifies a thing rather
+       than grading it — none of these five is ever good or bad, they are just different
+       readings, and a tint each is what makes the strip scannable without reading the labels.
+       kept well below the status colours in saturation so they cannot be mistaken for one. */
+    --weather-air: #e08a5a;
+    --weather-cloud: #8fa3ad;
+    --weather-humidity: #5b9bd5;
+    --weather-pressure: #9b8cc4;
+    --weather-wind: #58b4b0;
+
+    /* the three physio traces, on the same principle: colour that says which channel this is
+       rather than how it is doing. three plots stacked in one panel were one accent colour three
+       times over, and told apart only by their labels.
+       heart sits lighter and warmer than --critical deliberately. it is on screen every second of
+       the session, and a colour that is always on cannot also mean alarm. */
+    --trace-heart: #ff7a7a;
+    --trace-breathing: #62b6f0;
+    --trace-stress: #b98ee0;
+
+    /* live is its own token rather than the brand colour, so one rule on the board can turn
+       every pulse and glow off at once when the race is held or finished. */
+    --live: var(--brand);
+    --live-glow: var(--glow-soft);
+
+    --font-ui: 'Archivo', system-ui, 'Segoe UI', Roboto, sans-serif;
+    /* raw telemetry only: lap times, deltas, temperatures, pressures, revs */
+    --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+    /* whole font shorthands, because the design applies them as `font: var(--t-label)` and
+       one name per role is the thing that keeps ten panels agreeing on a size */
+    --t-display: 700 56px / 1 var(--font-ui);
+    --t-section: 600 15px / 1.1 var(--font-ui);
+    --t-body: 400 13px / 1.35 var(--font-ui);
+    --t-body-sm: 400 12px / 1.45 var(--font-ui);
+    --t-label: 600 10px / 1.2 var(--font-ui);
+    --t-label-xs: 600 9px / 1.2 var(--font-ui);
+    --t-readout-xl: 500 30px / 1 var(--font-mono);
+    --t-readout-lg: 500 22px / 1 var(--font-mono);
+    --t-readout-sm: 500 13px / 1.2 var(--font-mono);
+    --t-readout-xs: 400 11px / 1.3 var(--font-mono);
+
+    --track-display: -0.02em;
+    --track-section: 0.06em;
+    --track-label: 0.12em;
+    --track-label-xs: 0.1em;
+    --track-readout: -0.01em;
+    --track-tight: -0.02em;
+
+    /* density is how this board ranks things, so panel padding is a named decision */
+    --pad-normal: 12px;
+    --pad-dense: 0px;
+
+    --r-1: 2px;
+    --dur-1: 150ms;
+    --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+    --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --dur-1: 0ms;
+    }
+  }
+}
